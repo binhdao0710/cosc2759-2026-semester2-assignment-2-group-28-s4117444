@@ -1,0 +1,12 @@
+schema: "classroom50/repo-config/v1"
+classroom: "cosc2759-2026-semester2"
+assignment: "assignment-2"
+owner:
+  username: "binhdao0710"
+  id: 201857208
+  accepted_at: "2026-09-20T01:17:20Z"
+source:
+  owner: "rmit-computing-technologies"
+  owner_id: 82038963
+  repo: "sdo-2026-a2"
+  branch: "main"
