@@ -1,0 +1,31 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node -r dotenv/config server.js",
+    "db:migrate": "db-migrate up",
+    "env:dev": "echo 'DB_USER=foo-user\nDB_PASSWORD=secret-foo-password\nDB_HOST=localhost' > .env"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "dotenv": "^17.2.1",
+    "eslint": "^9.34.0",
+    "express": "^5.1.0",
+    "morgan": "^1.10.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "axios": "^1.11.0",
+    "ejs": "^3.1.10",
+    "express-ejs-layouts": "^2.5.1"
+  }
+}

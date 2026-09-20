@@ -1,0 +1,34 @@
+<h1 class="mb-4">Create a New Post</h1>
+
+<form action="/posts/new" method="POST" class="needs-validation" novalidate>
+  <div class="mb-3">
+    <label for="title" class="form-label">Title</label>
+    <input 
+      type="text" 
+      class="form-control" 
+      id="title" 
+      name="title" 
+      placeholder="Enter a title"
+      required>
+    <div class="invalid-feedback">
+      Please enter a title.
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label for="content" class="form-label">Content</label>
+    <textarea 
+      class="form-control" 
+      id="content" 
+      name="content" 
+      rows="5" 
+      placeholder="Write your content here..."
+      required></textarea>
+    <div class="invalid-feedback">
+      Please enter some content.
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Save Post</button>
+  <a href="/posts" class="btn btn-secondary">Cancel</a>
+</form>

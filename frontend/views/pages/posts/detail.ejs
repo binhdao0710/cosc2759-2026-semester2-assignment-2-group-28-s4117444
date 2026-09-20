@@ -1,0 +1,9 @@
+<h2><%= post.title %></h2>
+<small 
+    class="text-muted post-date" 
+    data-datetime="<%= new Date(post.created_at).toISOString() %>">
+    <!-- fallback: server time -->
+    <%= new Date(post.created_at).toUTCString() %>
+</small>
+<p><%= post.content %></p>
+<br />

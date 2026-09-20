@@ -1,0 +1,8 @@
+<div class="d-flex flex-column align-items-center justify-content-center text-center py-5">
+  <h1 class="display-3 text-danger mb-3"><%= status || 500 %></h1>
+  <h2 class="mb-3"><%= message || "Something went wrong" %></h2>
+  <p class="text-muted mb-4">
+    <%= details || "An unexpected error occurred. Please try again later." %>
+  </p>
+  <a href="/" class="btn btn-primary">Go Home</a>
+</div>
