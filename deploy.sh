@@ -19,3 +19,29 @@ fi
 if [=z "${DB_PASSWORD:-}"]; then 
     read -rps "Enter DB password: " DB_PASSWORD
 fi 
+cd terraform
+terraform init
+terraform apply -auto-approve 
+#stops the interactive prompt 
+IP=$(terraform output -raw instance_public_ip)
+cd .. 
+
+cat > ansible/inventory.ini <<EOF
+[app]
+ansible_host=$IP ansible_user=ubuntu ansible_ssh_private_key_file=../terraform/posts-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+EOF
+
+#wait for SSH to be available for ansible to login 
+echo "waiting for SSH on $IP..."
+#-z checks if the port is open and doesn't send any data
+#-w5 means the command timeouts after 5 seconds
+until nc -z -w5 "$IP" 22; do 
+    sleep 5
+    echo "Still waiting..."
+done
+
+ansible-playbook -i ansible/inventory.ini ansible/playbook.yml \
+  --extra-vars "db_user=$DB_USER db_password=$DB_PASSWORD"
+
+echo "Deployment complete. Backend available at: http://$IP:8080. Frontend available at http://$IP:8080."
+curl -sf "http://$IP:8080" && echo "" && echo "Backend responded successfully."
