@@ -63,7 +63,7 @@ resource "aws_key_pair" "public_key"{
 
 resource "local_file" "private_key"{
     content = tls_private_key.ssh_key.private_key_pem
-    filename        = "${path.module}/posts-key.pem"
+    filename        = "${path.module}/private-posts-key.pem"
     file_permission = "0400"
 }
 

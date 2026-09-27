@@ -1,0 +1,50 @@
+- name: Set up Docker on EC2 instances for Posts app server
+  hosts: app
+  become: true
+
+  tasks:
+    - name: Install Docker on Ubuntu
+      apt:
+        name: docker.io
+        state: present
+        update_cache: true
+
+    - name: Ensure Docker is running
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Install Docker Python SDK
+      pip:
+        name: docker
+        executable: pip3
+
+    - name: Create a Docker network
+      community.docker.docker_network:
+        name: posts-net
+
+    - name: Run the DB container
+      community.docker.docker_container:
+        name: db
+        image: liamrmit/sdo-2026:db
+        networks:
+          - name: posts-net
+        env:
+          POSTGES_USER: "{{ db_user }}"
+          POSTGES_PASSWORD: "{{ db_password }}"
+          POSTGRES_DB: "posts"
+
+    - name: Run the Backend container
+      community.docker.docker_container:
+        name: backend
+        image: liamrmit/sdo-2026:backend
+        networks:
+          - name: posts-net
+        published_ports:
+          - "8080:8080"
+        env:
+          PORT: "8080"
+          DB_USER: "{{ db_user }}"
+          DB_PASSWORD: "{{ db_password }}"
+          DB_HOST: "db"
