@@ -12,23 +12,25 @@ command -v ansible > /dev/null ||  { echo "ansible not found"; exit 1; }
 #operators set the value as an empty string to prevent
 #set -u from crashing 
 
-if [-z "${DB_USER:-}"]; then
+if [ -z "${DB_USER:-}" ]; then
     read -rp "Enter DB username: " DB_USER
 fi
 
-if [=z "${DB_PASSWORD:-}"]; then 
+if [ -z "${DB_PASSWORD:-}" ]; then 
     read -rps "Enter DB password: " DB_PASSWORD
 fi 
 cd terraform
 terraform init
 terraform apply -auto-approve 
+
 #stops the interactive prompt 
 IP=$(terraform output -raw instance_public_ip)
 cd .. 
+chmod 400 ./terraform/private-posts-key.pem
 
 cat > ansible/inventory.ini <<EOF
 [app]
-ansible_host=$IP ansible_user=ubuntu ansible_ssh_private_key_file=../terraform/posts-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+posts-server ansible_host=$IP ansible_user=ubuntu ansible_ssh_private_key_file=./terraform/private-posts-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 EOF
 
 #wait for SSH to be available for ansible to login 

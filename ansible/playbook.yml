@@ -16,9 +16,9 @@
         enabled: true
 
     - name: Install Docker Python SDK
-      pip:
-        name: docker
-        executable: pip3
+      apt:
+        name: python3-docker
+        state: present
 
     - name: Create a Docker network
       community.docker.docker_network:

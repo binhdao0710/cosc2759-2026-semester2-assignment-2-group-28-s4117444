@@ -3,3 +3,6 @@ node_modules
 .terraform
 terraform.tfstate
 terraform.tfstate.backup
+*.tfstate.*
+*.pem
+ansible/inventory.ini
