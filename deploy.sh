@@ -43,5 +43,5 @@ done
 ansible-playbook -i ansible/inventory.ini ansible/playbook.yml \
   --extra-vars "db_user=$DB_USER db_password=$DB_PASSWORD"
 
-echo "Deployment complete. Backend available at: http://$IP:8080. Frontend available at http://$IP:8080."
+echo "Deployment complete. Backend available at: http://$IP:8080."
 curl -sf "http://$IP:8080" && echo "" && echo "Backend responded successfully."
