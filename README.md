@@ -17,11 +17,11 @@ This is the Backend Posts Service. It is responsible for talking to the Posts DB
 
 ### Image
 
-The Backend service image is available at `rmit-computing-technologies/sdo-2026:backend`.
+The Backend service image is available at `liamrmit/sdo-2026:backend`.
 
 ### Dependencies
 
-The Backend service depends on a PostgreSQL database, with the required migrations. An image for this has been provided, available at `rmit-computing-technologies/sdo-2026:db`.
+The Backend service depends on a PostgreSQL database, with the required migrations. An image for this has been provided, available at `liamrmit/sdo-2026:db`.
 
 ### Database Configuration
 
@@ -46,7 +46,7 @@ This is the Frontend Posts Service. It is responsible for serving a UI to users 
 
 ### Image
 
-The Frontend service image is available at `rmit-computing-technologies/sdo-2026:frontend`.
+The Frontend service image is available at `liamrmit/sdo-2026:frontend`.
 
 # Running The Services Locally (In Docker)
 
