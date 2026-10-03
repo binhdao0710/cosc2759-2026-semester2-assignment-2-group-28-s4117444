@@ -48,3 +48,15 @@
           DB_USER: "{{ db_user }}"
           DB_PASSWORD: "{{ db_password }}"
           DB_HOST: "db"
+
+    - name: Run the Frontend container
+      community.docker.docker_container:
+        name: frontend
+        image: liamrmit/sdo-2026:frontend
+        networks:
+          - name: posts-net
+        published_ports:
+          - "8081:8081"
+        env:
+          PORT: "8080"
+          BACKEND_URL: "http://backend:8080"
