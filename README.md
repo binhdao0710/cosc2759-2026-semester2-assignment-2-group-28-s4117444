@@ -77,7 +77,7 @@ Each container needs:
 
 ### Ansible (`ansible/`)
 
-- `playbook.yml`: Installs Docker, creates the `posts-net` network, install the Docker Python SDK on the containers and starts the `db` and `backend` containers with the required environment variables.
+- `playbook.yml`: Installs Docker, creates the `posts-net` network, install the Docker Python SDK on the containers, starts the `db`, `backend`, and `frontend` containers with the required environment variables.
 - `inventory.ini`: Generated automatically by `deploy.sh` containing the public IP address and Ansible SSH credentials.
 
 ### `deploy.sh`
