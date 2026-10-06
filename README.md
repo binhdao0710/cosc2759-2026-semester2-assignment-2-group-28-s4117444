@@ -65,7 +65,7 @@ Each container needs:
   - The PostgreSQL database receives inbound traffic on port `5432`
   - The ports used by the Backend and Frontend services are configurable through the `PORT` environment variable. Otherwise, it will default to port `8081`.
 
-#Automatic Deployment Implementation
+# Automatic Deployment Implementation
 
 ## Components
 
