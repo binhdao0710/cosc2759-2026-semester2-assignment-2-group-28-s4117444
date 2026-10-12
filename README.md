@@ -101,6 +101,6 @@ The pipeline leverages the deployment script:
 
 ## Design decisions and justifications
 
-- **Port 22 open to 0.0.0.0/0**: The port was opened so that Ansible can connect via SSH.
-- **Port 5432 not exposed**: the Backend and DB containers communicate over a private Docker network on the same host, so no security group rule is needed for Postgres traffic in this section.
+- **Port 22 open to 0.0.0.0/0 on all EC2 instances**: The port was opened so that Ansible can connect via SSH to all containers.
+- **Port 5432 not exposed to the public**: Port 5432 of the database container is only exposed to the backend, defined in the security group rules. This ensures that the database is not reachable by any ordinary user.
 - **Credentials never committed**: DB credentials are prompted at runtime and AWS credentials are read from the environment. No credential is written to a file in the repo. In addtion, the `.gitignore` excludes `*.pem`, `*.tfstate*`, and the generated `ansible/inventory.ini`, to ensure no sensitive data is exposed.
