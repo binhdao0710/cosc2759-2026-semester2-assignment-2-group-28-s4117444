@@ -43,10 +43,22 @@ cat > ansible/inventory.ini <<EOF
 EOF
 
 #wait for SSH to be available for ansible to login 
-echo "waiting for SSH on $IP..."
+echo "waiting for SSH on $DB_PUBLIC_IP..."
 #-z checks if the port is open and doesn't send any data
 #-w5 means the command timeouts after 5 seconds
-until nc -z -w5 "$IP" 22; do 
+until nc -z -w5 "$DB_PUBLIC_IP" 22; do 
+    sleep 5
+    echo "Still waiting..."
+done
+
+echo "waiting for SSH on $BACKEND_PUBLIC_IP..."
+until nc -z -w5 "$BACKEND_PUBLIC_IP" 22; do 
+    sleep 5
+    echo "Still waiting..."
+done
+
+echo "waiting for SSH on $FRONTEND_PUBLIC_IP..."
+until nc -z -w5 "$FRONTEND_PUBLIC_IP" 22; do 
     sleep 5
     echo "Still waiting..."
 done
