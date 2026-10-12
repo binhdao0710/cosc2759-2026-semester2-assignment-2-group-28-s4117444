@@ -1,0 +1,31 @@
+name: CD Pipeline
+on:
+  push: null
+  pull_request:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: hashicorp/setup-terraform@v4
+    - name: Setup Terraform
+      uses: hashicorp/setup-terrafrom@v4
+    - name: Setup Ansible
+      run: |
+        sudo apt update && sudo apt upgrade -y
+        sudo apt install software-properties-common -y
+        sudo add-apt-repository --yes --update ppa:ansible/ansible
+        sudo apt install ansible -y
+        ansible-galaxy collection install community.docker
+    - name: Run deployment script
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      run: |
+        chmod +x deploy.sh
+        ./deploy.sh

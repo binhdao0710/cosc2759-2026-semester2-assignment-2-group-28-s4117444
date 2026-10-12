@@ -22,9 +22,12 @@ fi
 cd terraform
 terraform init
 terraform apply -auto-approve 
-
 #stops the interactive prompt 
-IP=$(terraform output -raw instance_public_ip)
+
+DB_PUBLIC_IP=$(terraform output -raw db_public_ip)
+BACKEND_PUBLIC_IP=$(terraform output -raw backend_public_ip)
+FRONTEND_PUBLIC_IP=$(terraform output -raw frontend_public_ip)
+DB_PRIVATE_IP=$(terraform output -raw db_private_ip)
 cd .. 
 chmod 400 ./terraform/private-posts-key.pem
 
