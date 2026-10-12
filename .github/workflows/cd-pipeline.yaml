@@ -1,9 +1,8 @@
 name: CD Pipeline
 on:
-  push: null
-  pull_request:
-    branches:
-      - main
+  push:
+    branches: [main]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
