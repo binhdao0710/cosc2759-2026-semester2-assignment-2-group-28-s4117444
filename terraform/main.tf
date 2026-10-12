@@ -24,6 +24,15 @@ data "aws_subnets" "default" {
   }
 }
 
+terraform {
+  backend "s3" {
+    bucket       = "s4117444-tfstate"
+    key          = "terraform.tfstate"
+    region       = "us-east-1"  
+    use_lockfile = true
+  }
+}
+
 resource "aws_security_group" "db_sg" {
   name   = "db-sg"
   description = "DB security group via Terraform"
