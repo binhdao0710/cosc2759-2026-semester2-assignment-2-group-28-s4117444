@@ -65,30 +65,39 @@ Each container needs:
   - The PostgreSQL database receives inbound traffic on port `5432`
   - The ports used by the Backend and Frontend services are configurable through the `PORT` environment variable. Otherwise, it will default to port `8081`.
 
-#Automatic Deployment Implementation
+# Automatic Deployment Implementation
 
 ## Components
 
 ### Terraform (`terraform/`)
 
 - `terraform.tf`: Specify required providers (aws) and required version.
-- `main.tf`: Specify environments and resources to be configured.
-- `outputs.tf`: Exposes `instance_public_ip` for use by `deploy.sh`.
+- `main.tf`: Specify environments and resources to be configured, including security groups for the database, frontend, and backend, encryption key pair for access to EC2 instances, and 3 EC2 instances for the database, frontend, and backend.
+- `outputs.tf`: Exposes the database public and private IPs, the frontend public IP, and the backend public IP addresses for use in `deploy.sh`.
 
 ### Ansible (`ansible/`)
 
-- `playbook.yml`: Installs Docker, creates the `posts-net` network, install the Docker Python SDK on the containers, starts the `db`, `backend`, and `frontend` containers with the required environment variables.
-- `inventory.ini`: Generated automatically by `deploy.sh` containing the public IP address and Ansible SSH credentials.
+- `playbook.yml`: Setup Docker on all 3 EC2 instances, deploy 3 containers, one on each instance, using the provided images. The database is accessible through port 5432, the frontend is accessible through port 8081, and the backend is accessible through port 8080.
+- `inventory.ini`: Generated automatically by `deploy.sh` containing the public and private IPs retrieved in `output.tf`, along with the location of the private key for SSH connection.
 
 ### `deploy.sh`
 
 This is a bash script that fully automates the deployment process.
 
 - The script first checks if the required services (Ansible, Terraform) has been set up.
-- It then runs Terraform and ensure SSH connection is available.
+- It then runs Terraform, sets up the environmental variables and ensure SSH connection is available.
 - Once SSH is available, the Ansible inventory is generated, and the playbook is run afterwards.
-- DB credentials are prompted interactively and never stored in the repo.
+- DB credentials are prompted interactively as a fallback if not already available.
 - AWS credentials are expected as pre-exported environment variables.
+
+### `cd-pipeline.yaml`
+
+The pipeline leverages the deployment script:
+
+- The pipeline triggers on pushes to the main branch.
+- The pipeline sets up Terraform and Ansible on a fresh VM instance running Ubuntu.
+- The machine then get passed credentials as environmental variables that are needed for `deploy.sh`.
+- A permission is added to allow the script to run and then it is executed.
 
 ## Design decisions and justifications
 

@@ -24,9 +24,36 @@ data "aws_subnets" "default" {
   }
 }
 
-resource "aws_security_group" "posts_sg" {
-  name   = "posts-sg"
-  description = "security group via Terraform"
+resource "aws_security_group" "db_sg" {
+  name   = "db-sg"
+  description = "DB security group via Terraform"
+  vpc_id = data.aws_vpc.default.id
+
+  ingress{
+    from_port = 5432
+    to_port = 5432
+    protocol = "tcp" 
+    security_groups = [aws_security_group.backend_sg.id]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "backend_sg" {
+  name   = "backend-sg"
+  description = "Backend security group via Terraform"
   vpc_id = data.aws_vpc.default.id
 
   ingress {
@@ -39,6 +66,26 @@ resource "aws_security_group" "posts_sg" {
   ingress {
     from_port   = 8080
     to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "frontend_sg" {
+  name   = "frontend-sg"
+  description = "Frontend security group via Terraform"
+  vpc_id = data.aws_vpc.default.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -74,15 +121,41 @@ resource "local_file" "private_key"{
     file_permission = "0400"
 }
 
-resource "aws_instance" "posts_app" {
+resource "aws_instance" "db" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = "t2.micro"
   key_name                    = aws_key_pair.public_key.key_name
-  vpc_security_group_ids      = [aws_security_group.posts_sg.id]
+  vpc_security_group_ids      = [aws_security_group.db_sg.id]
   subnet_id                   = data.aws_subnets.default.ids[0]
   associate_public_ip_address = true
 
   tags = {
-    Name = "posts-app"
+    Name = "posts-db"
+  }
+}
+
+resource "aws_instance" "backend" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "t2.micro"
+  key_name                    = aws_key_pair.public_key.key_name
+  vpc_security_group_ids      = [aws_security_group.backend_sg.id]
+  subnet_id                   = data.aws_subnets.default.ids[0]
+  associate_public_ip_address = true
+
+  tags = {
+    Name = "posts-backend"
+  }
+}
+
+resource "aws_instance" "frontend" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "t2.micro"
+  key_name                    = aws_key_pair.public_key.key_name
+  vpc_security_group_ids      = [aws_security_group.frontend_sg.id]
+  subnet_id                   = data.aws_subnets.default.ids[0]
+  associate_public_ip_address = true
+
+  tags = {
+    Name = "posts-frontend"
   }
 }

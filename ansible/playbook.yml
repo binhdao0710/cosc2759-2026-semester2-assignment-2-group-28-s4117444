@@ -1,62 +1,58 @@
-- name: Set up Docker on EC2 instances for Posts app server
-  hosts: app
+- name: Set up Docker on all hosts
+  hosts: db:backend:frontend
   become: true
-
   tasks:
-    - name: Install Docker on Ubuntu
-      apt:
-        name: docker.io
-        state: present
-        update_cache: true
-
+    - name: Install Docker
+      apt: { name: docker.io, state: present, update_cache: true }
     - name: Ensure Docker is running
-      service:
-        name: docker
-        state: started
-        enabled: true
-
+      service: { name: docker, state: started, enabled: true }
     - name: Install Docker Python SDK
-      apt:
-        name: python3-docker
-        state: present
+      apt: { name: python3-docker, state: present }
 
-    - name: Create a Docker network
-      community.docker.docker_network:
-        name: posts-net
-
+- name: Deploy DB container
+  hosts: db
+  become: true
+  tasks:
     - name: Run the DB container
       community.docker.docker_container:
         name: db
         image: liamrmit/sdo-2026:db
-        networks:
-          - name: posts-net
+        image_name_mismatch: recreate
+        ports:
+          - "5432:5432"
         env:
           POSTGRES_USER: "{{ db_user }}"
           POSTGRES_PASSWORD: "{{ db_password }}"
           POSTGRES_DB: "posts"
 
+- name: Deploy Backend container
+  hosts: backend
+  become: true
+  tasks:
     - name: Run the Backend container
       community.docker.docker_container:
         name: backend
         image: liamrmit/sdo-2026:backend
-        networks:
-          - name: posts-net
-        published_ports:
+        image_name_mismatch: recreate
+        ports:
           - "8080:8080"
         env:
           PORT: "8080"
           DB_USER: "{{ db_user }}"
           DB_PASSWORD: "{{ db_password }}"
-          DB_HOST: "db"
+          DB_HOST: "{{ db_host }}"
 
+- name: Deploy Frontend container
+  hosts: frontend
+  become: true
+  tasks:
     - name: Run the Frontend container
       community.docker.docker_container:
         name: frontend
         image: liamrmit/sdo-2026:frontend
-        networks:
-          - name: posts-net
-        published_ports:
+        image_name_mismatch: recreate
+        ports:
           - "8081:8081"
         env:
           PORT: "8081"
-          BACKEND_URL: "http://backend:8080"
+          BACKEND_URL: "{{ backend_url }}"

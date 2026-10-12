@@ -22,15 +22,24 @@ fi
 cd terraform
 terraform init
 terraform apply -auto-approve 
-
 #stops the interactive prompt 
-IP=$(terraform output -raw instance_public_ip)
+
+DB_PUBLIC_IP=$(terraform output -raw db_public_ip)
+BACKEND_PUBLIC_IP=$(terraform output -raw backend_public_ip)
+FRONTEND_PUBLIC_IP=$(terraform output -raw frontend_public_ip)
+DB_PRIVATE_IP=$(terraform output -raw db_private_ip)
 cd .. 
 chmod 400 ./terraform/private-posts-key.pem
 
 cat > ansible/inventory.ini <<EOF
-[app]
-posts-server ansible_host=$IP ansible_user=ubuntu ansible_ssh_private_key_file=./terraform/private-posts-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+[db]
+<DB_PUBLIC_IP> ansible_user=ubuntu ansible_ssh_private_key_file=./terraform/private-posts-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+[backend]
+<BACKEND_PUBLIC_IP> ansible_user=ubuntu ansible_ssh_private_key_file=./terraform/private-posts-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+[frontend]
+<FRONTEND_PUBLIC_IP> ansible_user=ubuntu ansible_ssh_private_key_file=./terraform/private-posts-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 EOF
 
 #wait for SSH to be available for ansible to login 
@@ -43,7 +52,7 @@ until nc -z -w5 "$IP" 22; do
 done
 
 ansible-playbook -i ansible/inventory.ini ansible/playbook.yml \
-  --extra-vars "db_user=$DB_USER db_password=$DB_PASSWORD"
+  --extra-vars "db_user=$DB_USER db_password=$DB_PASSWORD db_host=$DB_PRIVATE_IP backend_url=http://$BACKEND_IP:8080"
 
 echo "Deployment complete. Backend available at: http://$IP:8080. Frontend is available at: http://$IP:8081"
 curl -sf "http://$IP:8080" && echo "" && echo "Backend responded successfully."
