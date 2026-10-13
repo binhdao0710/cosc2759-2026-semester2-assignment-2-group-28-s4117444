@@ -144,6 +144,7 @@ resource "aws_instance" "db" {
 }
 
 resource "aws_instance" "backend" {
+  count = 2
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = "t2.micro"
   key_name                    = aws_key_pair.public_key.key_name
@@ -157,6 +158,7 @@ resource "aws_instance" "backend" {
 }
 
 resource "aws_instance" "frontend" {
+  count = 2
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = "t2.micro"
   key_name                    = aws_key_pair.public_key.key_name
