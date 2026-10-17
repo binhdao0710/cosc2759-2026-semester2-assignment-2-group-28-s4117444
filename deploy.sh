@@ -28,22 +28,28 @@ DB_PUBLIC_IP=$(terraform output -raw db_public_ip)
 BACKEND_ALB_IP=$(terraform output -raw backend_alb_dns)
 FRONTEND_ALB_IP=$(terraform output -raw frontend_alb_dns)
 DB_PRIVATE_IP=$(terraform output -raw db_private_ip)
-BACKEND_PUBLIC_IPS=$(terraform output -raw backend_public_ips)
-FRONTEND_PUBLIC_IPS=$(terraform output -raw frontend_public_ips)
+BACKEND_PUBLIC_IPS=$(terraform output -json backend_public_ips | jq -r '.[]')
+FRONTEND_PUBLIC_IPS=$(terraform output -json frontend_public_ips | jq -r '.[]')
 
 cd .. 
 chmod 400 ./terraform/private-posts-key.pem
 
 cat > ansible/inventory.ini <<EOF
 [db]
-$DB_PUBLIC_IP ansible_user=ubuntu ansible_ssh_private_key_file=./terraform/private-posts-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+$DB_PUBLIC_IP
 
 [backend]
-$BACKEND_ALB_IP ansible_user=ubuntu ansible_ssh_private_key_file=./terraform/private-posts-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+$BACKEND_PUBLIC_IPS
 
 [frontend]
-$FRONTEND_ALB_IP ansible_user=ubuntu ansible_ssh_private_key_file=./terraform/private-posts-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+$FRONTEND_PUBLIC_IPS
+
+[all:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=./terraform/private-posts-key.pem
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 EOF
+
 
 #wait for SSH to be available for ansible to login 
 echo "waiting for SSH on $DB_PUBLIC_IP..."
