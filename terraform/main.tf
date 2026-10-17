@@ -196,7 +196,7 @@ resource "aws_lb" "frontend_alb" {
     internal        = false
     ip_address_type     = "ipv4"
     load_balancer_type = "application"
-    security_groups = [aws_security_group.alb-sg.id]
+    security_groups = [aws_security_group.alb_sg.id]
     subnets = data.aws_subnets.default.ids
     tags = {
         Name = "frontend-alb"
@@ -208,8 +208,8 @@ resource "aws_lb" "backend_alb" {
     internal        = false
     ip_address_type     = "ipv4"
     load_balancer_type = "application"
-    security_groups = [aws_security_group.alb-sg.id]
-    subnets = data.aws_subnet.default.ids
+    security_groups = [aws_security_group.alb_sg.id]
+    subnets = data.aws_subnets.default.ids
     tags = {
         Name = "backend-alb"
     }
@@ -268,11 +268,13 @@ resource "aws_lb_listener" "backend_listener" {
 }
 
 resource "aws_lb_target_group_attachment" "frontend_attach" {
+    count            = length(aws_instance.frontend)
     target_group_arn = aws_lb_target_group.frontend_tg.arn
     target_id        = aws_instance.frontend[count.index].id
 }
 
 resource "aws_lb_target_group_attachment" "backend_attach" {
+    count            = length(aws_instance.backend)
     target_group_arn = aws_lb_target_group.backend_tg.arn
     target_id        = aws_instance.backend[count.index].id
 }
