@@ -33,6 +33,26 @@ terraform {
   }
 }
 
+resource "aws_security_group" "alb_sg" {
+  name   = "alb-sg"
+  description = "ALB security group via Terraform"
+  vpc_id = data.aws_vpc.default.id
+
+  ingress{
+    from_port = 80
+    to_port = 80
+    protocol = "tcp" 
+    security_groups = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_security_group" "db_sg" {
   name   = "db-sg"
   description = "DB security group via Terraform"
@@ -149,7 +169,7 @@ resource "aws_instance" "backend" {
   instance_type               = "t2.micro"
   key_name                    = aws_key_pair.public_key.key_name
   vpc_security_group_ids      = [aws_security_group.backend_sg.id]
-  subnet_id                   = data.aws_subnets.default.ids[0]
+  subnet_id                   = data.aws_subnets.default.ids[count.index]
   associate_public_ip_address = true
 
   tags = {
@@ -163,10 +183,96 @@ resource "aws_instance" "frontend" {
   instance_type               = "t2.micro"
   key_name                    = aws_key_pair.public_key.key_name
   vpc_security_group_ids      = [aws_security_group.frontend_sg.id]
-  subnet_id                   = data.aws_subnets.default.ids[0]
+  subnet_id                   = data.aws_subnets.default.ids[count.index]
   associate_public_ip_address = true
 
   tags = {
     Name = "posts-frontend"
   }
+}
+
+resource "aws_lb" "frontend_alb" {
+    name            = "frontend-alb"
+    internal        = false
+    ip_address_type     = "ipv4"
+    load_balancer_type = "application"
+    security_groups = [aws_security_group.alb-sg.id]
+    subnets = data.aws_subnets.default.ids
+    tags = {
+        Name = "frontend-alb"
+    }
+}
+
+resource "aws_lb" "backend_alb" {
+    name            = "backend-alb"
+    internal        = false
+    ip_address_type     = "ipv4"
+    load_balancer_type = "application"
+    security_groups = [aws_security_group.alb-sg.id]
+    subnets = data.aws_subnet.default.ids
+    tags = {
+        Name = "backend-alb"
+    }
+}
+
+resource "aws_lb_target_group" "frontend_tg" {
+    health_check {
+        interval            = 10
+        path                = "/"
+        protocol            = "HTTP"
+        timeout             = 5
+        healthy_threshold   = 5
+        unhealthy_threshold = 2
+    }
+    name          = "frontend-tg"
+    port          = 8081
+    protocol      = "HTTP"
+    target_type   = "instance"
+    vpc_id = data.aws_vpc.default.id
+}
+
+resource "aws_lb_target_group" "backend_tg" {
+    health_check {
+        interval            = 10
+        path                = "/"
+        protocol            = "HTTP"
+        timeout             = 5
+        healthy_threshold   = 5
+        unhealthy_threshold = 2
+    }
+    name          = "backend-tg"
+    port          = 8080
+    protocol      = "HTTP"
+    target_type   = "instance"
+    vpc_id = data.aws_vpc.default.id
+}
+
+resource "aws_lb_listener" "frontend_listener" {
+    load_balancer_arn          = aws_lb.frontend_alb.arn
+    port                       = 80
+    protocol                   = "HTTP"
+    default_action {
+        target_group_arn         = aws_lb_target_group.frontend_tg.arn
+        type                     = "forward"
+    }
+}
+
+resource "aws_lb_listener" "backend_listener" {
+    load_balancer_arn          = aws_lb.backend_alb.arn
+    port                       = 80
+    protocol                   = "HTTP"
+    default_action {
+        target_group_arn         = aws_lb_target_group.backend_tg.arn
+        type                     = "forward"
+    }
+}
+
+resource "aws_lb_target_group_attachment" "frontend_attach" {
+    target_group_arn = aws_lb_target_group.frontend_tg.arn
+    target_id        = aws_instance.frontend[count.index].id
+}
+
+resource "aws_lb_target_group_attachment" "backend_attach" {
+    target_group_arn = aws_lb_target_group.backend_tg.arn
+    target_id        = aws_instance.backend[count.index].id
 }
