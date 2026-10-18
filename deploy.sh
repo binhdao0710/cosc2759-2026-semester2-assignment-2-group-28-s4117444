@@ -28,8 +28,8 @@ DB_PUBLIC_IP=$(terraform output -raw db_public_ip)
 BACKEND_ALB_IP=$(terraform output -raw backend_alb_dns)
 FRONTEND_ALB_IP=$(terraform output -raw frontend_alb_dns)
 DB_PRIVATE_IP=$(terraform output -raw db_private_ip)
-BACKEND_PUBLIC_IPS=$(terraform output -json backend_public_ips | jq -r '.[]')
-FRONTEND_PUBLIC_IPS=$(terraform output -json frontend_public_ips | jq -r '.[]')
+BACKEND_IPS=$(terraform output -json backend_ips | jq -r '.[]')
+FRONTEND_IPS=$(terraform output -json frontend_ips | jq -r '.[]')
 
 cd .. 
 chmod 400 ./terraform/private-posts-key.pem
@@ -39,10 +39,10 @@ cat > ansible/inventory.ini <<EOF
 $DB_PUBLIC_IP
 
 [backend]
-$BACKEND_PUBLIC_IPS
+$BACKEND_IPS
 
 [frontend]
-$FRONTEND_PUBLIC_IPS
+$FRONTEND_IPS
 
 [all:vars]
 ansible_user=ubuntu
@@ -60,7 +60,7 @@ until nc -z -w5 "$DB_PUBLIC_IP" 22; do
     echo "Still waiting..."
 done
 
-for ip in $BACKEND_PUBLIC_IPS $FRONTEND_PUBLIC_IPS; do
+for ip in $BACKEND_IPS $FRONTEND_IPS; do
     echo "waiting for SSH on $ip..."
     until nc -z -w5 "$ip" 22; do 
         sleep 5
