@@ -69,8 +69,8 @@ for ip in $BACKEND_PUBLIC_IPS $FRONTEND_PUBLIC_IPS; do
 done
 
 ansible-playbook -i ansible/inventory.ini ansible/playbook.yml \
-  --extra-vars "db_user=$DB_USER db_password=$DB_PASSWORD db_host=$DB_PRIVATE_IP backend_url=http://$BACKEND_ALB_IP:8080"
+  --extra-vars "db_user=$DB_USER db_password=$DB_PASSWORD db_host=$DB_PRIVATE_IP backend_url=http://$BACKEND_ALB_IP"
 
-echo "Deployment complete. Backend available at: http://$BACKEND_ALB_IP:8080. Frontend is available at: http://$FRONTEND_ALB_IP:8081"
+echo "Deployment complete. Backend available at: http://$BACKEND_ALB_IP. Frontend is available at: http://$FRONTEND_ALB_IP"
 curl -sf "http://$BACKEND_ALB_IP" && echo "" && echo "Backend responded successfully."
 curl -sf "http://$FRONTEND_ALB_IP" && echo "" && echo "Frontend is available." 
