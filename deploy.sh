@@ -73,4 +73,5 @@ ansible-playbook -i ansible/inventory.ini ansible/playbook.yml \
 
 echo "Deployment complete. Backend available at: http://$BACKEND_ALB_IP. Frontend is available at: http://$FRONTEND_ALB_IP"
 curl -sf "http://$BACKEND_ALB_IP" && echo "" && echo "Backend responded successfully."
+sleep 60
 curl -sf "http://$FRONTEND_ALB_IP" && echo "" && echo "Frontend is available." 

@@ -221,8 +221,8 @@ resource "aws_lb_target_group" "frontend_tg" {
         path                = "/"
         protocol            = "HTTP"
         timeout             = 5
-        healthy_threshold   = 2
-        unhealthy_threshold = 1
+        healthy_threshold   = 5
+        unhealthy_threshold = 2
     }
     name          = "frontend-tg"
     port          = 8081
@@ -237,8 +237,8 @@ resource "aws_lb_target_group" "backend_tg" {
         path                = "/"
         protocol            = "HTTP"
         timeout             = 5
-        healthy_threshold   = 2
-        unhealthy_threshold = 1
+        healthy_threshold   = 5
+        unhealthy_threshold = 2
     }
     name          = "backend-tg"
     port          = 8080
