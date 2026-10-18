@@ -72,13 +72,17 @@ Each container needs:
 ### Terraform (`terraform/`)
 
 - `terraform.tf`: Specify required providers (aws) and required version.
-- `main.tf`: Specify environments and resources to be configured, including security groups for the database, frontend, and backend, encryption key pair for access to EC2 instances, and 3 EC2 instances for the database, frontend, and backend.
-- `outputs.tf`: Exposes the database public and private IPs, the frontend public IP, and the backend public IP addresses for use in `deploy.sh`.
+- `main.tf`: Specify environments and resources to be configured, including:
+  - Security groups for the application load balancers, the database, the frontend, and the backend.
+  - Encryption key pair for access to EC2 instances.
+  - The listeners, target groups, load balancers, and attachements for the frontend and backend.
+  - 1 EC2 instance for the database, 2 instances for the frontend, and 2 instances for the backend.
+- `outputs.tf`: Exposes the database public and private IPs, the frontend public IPs, the backend public IPs, and the ALB DNS of the frontend and backend for use in `deploy.sh`.
 
 ### Ansible (`ansible/`)
 
-- `playbook.yml`: Setup Docker on all 3 EC2 instances, deploy 3 containers, one on each instance, using the provided images. The database is accessible through port 5432, the frontend is accessible through port 8081, and the backend is accessible through port 8080.
-- `inventory.ini`: Generated automatically by `deploy.sh` containing the public and private IPs retrieved in `output.tf`, along with the location of the private key for SSH connection.
+- `playbook.yml`: Setup Docker on all 5 EC2 instances, deploy 5 containers, one on each instance, using the provided images. The database is accessible through port 5432, the frontend is accessible through port 8081, and the backend is accessible through port 8080.
+- `inventory.ini`: Generated automatically by `deploy.sh` containing the IPs and DNS names retrieved in `output.tf`, along with the location of the private key for SSH connection.
 
 ### `deploy.sh`
 
@@ -102,5 +106,7 @@ The pipeline leverages the deployment script:
 ## Design decisions and justifications
 
 - **Port 22 open to 0.0.0.0/0 on all EC2 instances**: The port was opened so that Ansible can connect via SSH to all containers.
+- **Port 80 0pen to 0.0.0.0/0 on backend and frontend EC2 instances**: The ALB listeners are opened on port 80, so the instances belonging in the respective target groups must allow traffic from this port.
+- **Port 8080 open to 0.0.0.0/0 on backend instances and 8081 on frontend instances**: These ports are still required to be opened as it is how the ALB communicates with these EC2 instances.
 - **Port 5432 not exposed to the public**: Port 5432 of the database container is only exposed to the backend, defined in the security group rules. This ensures that the database is not reachable by any ordinary user.
 - **Credentials never committed**: DB credentials are prompted at runtime and AWS credentials are read from the environment. No credential is written to a file in the repo. In addtion, the `.gitignore` excludes `*.pem`, `*.tfstate*`, and the generated `ansible/inventory.ini`, to ensure no sensitive data is exposed.
