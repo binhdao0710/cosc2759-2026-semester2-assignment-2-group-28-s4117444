@@ -72,5 +72,5 @@ ansible-playbook -i ansible/inventory.ini ansible/playbook.yml \
   --extra-vars "db_user=$DB_USER db_password=$DB_PASSWORD db_host=$DB_PRIVATE_IP backend_url=http://$BACKEND_ALB_IP:8080"
 
 echo "Deployment complete. Backend available at: http://$BACKEND_ALB_IP:8080. Frontend is available at: http://$FRONTEND_ALB_IP:8081"
-curl -sf "http://$BACKEND_ALB_IP:8080" && echo "" && echo "Backend responded successfully."
-curl -sf "http://$FRONTEND_ALB_IP:8081" && echo "" && echo "Frontend is available." 
+curl -sf "http://$BACKEND_ALB_IP" && echo "" && echo "Backend responded successfully."
+curl -sf "http://$FRONTEND_ALB_IP" && echo "" && echo "Frontend is available." 
